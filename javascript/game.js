@@ -177,6 +177,19 @@ updateTimer: function(){
 
     },
 
+		squareMove : function(newX, newY){
+
+		},
+
+		squareRecize : function(){
+
+		},
+	//=====================================
+
+		squareAction : function(){
+
+		},
+
 	//==============================================================================
 	//===                                 GRAPHIC                                ===
 	//==============================================================================
@@ -186,6 +199,10 @@ updateTimer: function(){
 	//==============================================================================
 	 //===                                 DETECT                                 ===
 	 //==============================================================================
+	 random : function(min, max){
+		 Math.floor((Math.random() * min) + max);
+	 },
+
 	 nexTo : function(whoOne,whoTwo, distance ){
 			 if(Math.sqrt(Math.pow(whoOne.x-whoTwo.x,2)+Math.pow(whoOne.y-whoTwo.y,2))< distance ){
 					 return(true);
@@ -388,13 +405,12 @@ updateTimer: function(){
 			 actif.hit="punch";
 			 actif.graphicCooldown=60;
 			 passif.hit="getpunch";
-			 if(Game.nexToHor(actif, passif, 50) && Game.nexToVer(actif, passif, 10)){
+			 if(Game.nexToHor(actif, passif, 30) && Game.nexToVer(actif, passif, 10)){
 				 var x = Math.abs(actif.x - passif.x);
 				 var speedX = (1/(0.006*(x-10)))+180 ;
-				 console.log(speedX);
 				 // Attaquant - Attaqué - Vitesse X - Vitesse Y - Cooldown - isMovable - facing
-				 Game.setHit(actif,passif, speedX, -150, 100, true, true);
-				 Game.getHit(actif, passif, speedX, 60, 60, true, false);
+				 Game.setHit(actif,passif, speedX, -150, 72, false, true);
+				 Game.getHit(actif, passif, null, 60, 100, false, false);
 			 }
 		 }
 	 },
@@ -415,12 +431,11 @@ updateTimer: function(){
 			 }
 	 },
 
-	 setHit : function(mover, moved,hitSpeedX, hitSpeedY, cooldown, isMovable, face){//PASSIF
-		 console.log("sethit :"+hitSpeedX);
+	 setHit : function(mover, moved,hitSpeedX, hitSpeedY, setCooldown, isMovable, face){//PASSIF
 			 if(face==true){
 					 if(Game.facing(mover, moved)==true){
 							 var hitSpeedX = Game.orientHit(mover, moved, hitSpeedX);
-							 Game.appplyHit(moved, hitSpeedX, hitSpeedY, this.cooldown, isMovable);
+							 Game.appplyHit(moved, hitSpeedX, hitSpeedY, setCooldown, isMovable);
 					 }
 			 }
 			 else{
@@ -429,13 +444,11 @@ updateTimer: function(){
 			 }
 	 },
 	 getHit : function(mover,moved, hitSpeedX, hitSpeedY, getcooldown, isMovable){//ACTIF
-		 	 console.log("gethit :"+hitSpeedX);
 			 var hitSpeedX = Game.orientHit(mover, moved, hitSpeedX);
 			 Game.appplyHit(mover, hitSpeedX, hitSpeedY, getcooldown, isMovable);
 	 },
 	 //==================
 	 appplyHit : function(who , hitSpeedX, hitSpeedY, appCooldown, isMovable){
-		 		 console.log("applyhit :"+hitSpeedX);
 			 who.hitCooldown = appCooldown;
 			 who.isMovable=isMovable;
 			 if(hitSpeedY!=null){
