@@ -116,9 +116,9 @@ var Game = {
 			Game.updateTimer();
 		})
 		//Graphics
-		scoreTextOne = game.add.text(35, 16, 'player 1: '+playerOne.score+'%', { fontSize: '20px',font: 'Press Start 2P', fill: 'rgb(255, 255, 255)' });
+		scoreTextOne = game.add.text(35, 20, 'player 1: '+playerOne.score+'%', { fontSize: '20px',font: 'Press Start 2P', fill: 'rgb(255, 255, 255)' });
 		scoreTextOne.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
-		scoreTextTwo = game.add.text(530, 16, 'player 2: '+playerTwo.score+'%', { fontSize: '20px',font: "Press Start 2P", fill: 'rgb(255, 255, 255)' });
+		scoreTextTwo = game.add.text(650, 20, 'player 2: '+playerTwo.score+'%', { fontSize: '20px',font: "Press Start 2P", fill: 'rgb(255, 255, 255)' });
 		scoreTextTwo.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
 	},
 
