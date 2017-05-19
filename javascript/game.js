@@ -212,8 +212,8 @@ updateTimer: function(){
 			 }
 	 },
 
-	 isOnHead : function(playerUp, playerDown, deltaX){
-			 if(playerUp.y<playerDown.y && Game.nexToVer(playerUp, playerDown, playerDown.hitBoxY+5) &&  Game.nexToHor(playerUp, playerDown, playerDown.hitBoxX+deltaX)){
+	 isOnHead : function(playerUp, playerDown,ajustement){
+			 if(playerUp.y<playerDown.y && Game.nexToVer(playerUp, playerDown, 30) &&  Game.nexToHor(playerUp, playerDown, playerDown.hitBoxX+ajustement)){
 					 return(true);
 			 }
 			 else {
@@ -222,8 +222,8 @@ updateTimer: function(){
 
 	 },
 
-	 nexToVer : function(whoOne, whoTwo , distance ){
-			 if(Math.abs(whoOne.y - whoTwo.y)<distance){
+	 nexToVer : function(whoOne, whoTwo , delta){
+			 if(Math.abs(whoOne.y - whoTwo.y)<=delta){
 					 return(true);
 			 }
 			 else {
@@ -232,7 +232,7 @@ updateTimer: function(){
 	 },
 
 	 nexToHor : function(whoOne, whoTwo, distance ){
-			 if(Math.abs(whoOne.x - whoTwo.x)<distance){
+			 if(Math.abs(whoOne.x - whoTwo.x)<=distance){
 					 return(true);
 			 }
 			 else {
@@ -374,18 +374,16 @@ updateTimer: function(){
 //===                                 INTERRACTIONS                                  ===
 //======================================================================================
 	 getJumpHead : function(actif, passif){
-			 if(Game.isOnHead(actif, passif, 3) && Game.toBottom(actif)==false && !actif.body.onFloor() ){
+			 if(Game.isOnHead(actif, passif, -1) && Game.toBottom(actif)==false){
 					 // QUI - Vitesse X - Vitesse Y - Cooldown - isMovable
-					 Game.setHit(actif, passif, null, 300, null, true);
+					 Game.setHit(actif, passif, null, 100, null, true);
 					 Game.getHit(actif, passif, null, -300, null, true);
 					 actif.jumpCount=1;
 			 }
 	 },
 //=====================================
 	 interact : function(actorOne, actorTwo){
-			 if(actorOne.isMovable==true){
-					 Game.getJumpHead(actorOne, actorTwo);
-			 }
+		 	Game.getJumpHead(actorOne, actorTwo);
 	 },
 //===============================================================================
 //===                                 ATTACKS                                 ===
@@ -405,7 +403,7 @@ updateTimer: function(){
 			 actif.hit="punch";
 			 actif.graphicCooldown=60;
 			 passif.hit="getpunch";
-			 if(Game.nexToHor(actif, passif, 30) && Game.nexToVer(actif, passif, 10)){
+			 if(Game.nexToHor(actif, passif, 30) && Game.nexToVer(actif, passif, 14)){
 				 var x = Math.abs(actif.x - passif.x);
 				 var speedX = (1/(0.006*(x-10)))+180 ;
 				 // Attaquant - Attaqué - Vitesse X - Vitesse Y - Cooldown - isMovable - facing
@@ -501,7 +499,7 @@ updateTimer: function(){
 					if(who.body.onFloor() && Game.toBottom(who) ){
 						who.play('isShifting');
 					}
-					if(who.body.onFloor() && who.did=="stop"){
+					if(who.body.onFloor() && who.did=="stop" &&	who.graphicCooldown==0){
 						who.play('isStoping');
 					}
 				}
@@ -538,7 +536,9 @@ updateTimer: function(){
 		        Game.scoring(playerOne);
 						Game.scoring(playerTwo);
 		        //LOGS
-
+						console.log(Math.abs(playerOne.y - playerTwo.y));
+						console.log( Game.isOnHead(playerOne,playerTwo));
+						console.log( Game.isOnHead(playerTwo,playerOne));
 	},
 
 	render : function() {
