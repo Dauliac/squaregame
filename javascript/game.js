@@ -11,6 +11,8 @@ var Game = {
 	 	game.load.image('ground_1x1', 'asset/map/ground_1x1.png');
 		game.load.image('tiles2', 'asset/map/tiles2.png');
 		game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
+		game.load.image('restart', 'asset/restart.png');
+		game.load.audio('audioGame', 'asset/audio/Kubbi-Ember-04Cascade.mp3')
 	},
 
 //==============================================================================
@@ -50,6 +52,7 @@ var Game = {
 			players[n].animations.add('isShifting',[72],1,false);
 			players[n].animations.add('punch',[145,146,147,148,149,150,151,152,153],16,false);
 			players[n].animations.add('animEnd',[64,65,66,67,68,69,70],16,false);
+			players[n].animations.add('winAnim',[128,129,130,131,132,133,134,135,136,137,138,139,140],16,false);
 			//Physics
 			game.physics.enable(players[n],Phaser.Physics.ARCADE);
 			players[n].hitBoxX=14;
@@ -123,7 +126,11 @@ var Game = {
 		scoreTextOne.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
 		scoreTextTwo = game.add.text(675, 20, 'player 2: '+playerTwo.score+'%', { fontSize: '30px',font: "Faster One", fill: 'rgb(255, 255, 255)' });
 		scoreTextTwo.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
+		//audio
+		music2 = game.add.audio('audioGame');
+    music.play();
 	},
+
 
 updateTimer: function(){
 
@@ -137,21 +144,44 @@ updateTimer: function(){
     result += (seconds < 10) ? ":0" + seconds : ":" + seconds;
     Game.timeLabel.text = result;
 		if(Game.timeElapsed >= Game.totalTime){
-                if(playerOne.win=!false && playerTwo.win!=false){
-                        if(playerOne.score < playerTwo.score){
-                                playerOne.win=false;
-                                playerTwo.win=true;
-                                playerOne.play("animEnd");
-                            }
-                            else{
-                                playerTwo.win=false;
-                                playerOne.win=true;
-                                playerTwo.play("animEnd");
-            }
+				Game.winOrLoose();
 }
-}
+
 },
 
+winOrLoose : function(){
+	if(playerOne.win!=false && playerTwo.win!=false){
+					playerOne.body.velocity.x=0;
+					playerTwo.body.velocity.x=0;
+					Game.timeLabel.destroy();
+					Game.add.button(Game.game.world.centerX, 20, 'restart', Game.restartGame, Game);
+
+					if(playerOne.score < playerTwo.score){
+								playerTwo.win=true;
+								playerOne.win=false;
+								playerOne.play("animEnd");
+								console.log("pute");
+							}
+						if(playerTwo.score < playerOne.score){
+								playerTwo.win=false;
+								playerOne.win=true;
+								playerTwo.play("animEnd");
+								console.log("vraiment pas pute");
+								}
+						if(playerOne.score == playerTwo.score){
+								playerOne.win=false;
+								playerTwo.win=false;
+								Game.timeLabel.destroy();
+								Game.add.button(Game.game.world.centerX, 20, 'restart', Game.startGame, Game);
+								console.log("pas pute");
+										}
+						}
+},
+
+
+restartGame : function(){
+    this.state.start('Menu');
+},
 //==============================================================================
     //===                                 SCORE                                  ===
     //==============================================================================
@@ -191,6 +221,19 @@ updateTimer: function(){
 
     },
 
+		squareMove : function(newX, newY){
+
+		},
+
+		squareRecize : function(){
+
+		},
+	//=====================================
+
+		squareAction : function(){
+
+		},
+
 	//==============================================================================
 	//===                                 GRAPHIC                                ===
 	//==============================================================================
@@ -200,6 +243,10 @@ updateTimer: function(){
 	//==============================================================================
 	 //===                                 DETECT                                 ===
 	 //==============================================================================
+	 random : function(min, max){
+		 Math.floor((Math.random() * min) + max);
+	 },
+
 	 nexTo : function(whoOne,whoTwo, distance ){
 			 if(Math.sqrt(Math.pow(whoOne.x-whoTwo.x,2)+Math.pow(whoOne.y-whoTwo.y,2))< distance ){
 					 return(true);
@@ -209,8 +256,8 @@ updateTimer: function(){
 			 }
 	 },
 
-	 isOnHead : function(playerUp, playerDown, deltaX){
-			 if(playerUp.y<playerDown.y && Game.nexToVer(playerUp, playerDown, playerDown.hitBoxY+5) &&  Game.nexToHor(playerUp, playerDown, playerDown.hitBoxX+deltaX)){
+	 isOnHead : function(playerUp, playerDown,ajustement){
+			 if(playerUp.y<playerDown.y && Game.nexToVer(playerUp, playerDown, 30) &&  Game.nexToHor(playerUp, playerDown, playerDown.hitBoxX+ajustement)){
 					 return(true);
 			 }
 			 else {
@@ -219,8 +266,8 @@ updateTimer: function(){
 
 	 },
 
-	 nexToVer : function(whoOne, whoTwo , distance ){
-			 if(Math.abs(whoOne.y - whoTwo.y)<distance){
+	 nexToVer : function(whoOne, whoTwo , delta){
+			 if(Math.abs(whoOne.y - whoTwo.y)<=delta){
 					 return(true);
 			 }
 			 else {
@@ -229,7 +276,7 @@ updateTimer: function(){
 	 },
 
 	 nexToHor : function(whoOne, whoTwo, distance ){
-			 if(Math.abs(whoOne.x - whoTwo.x)<distance){
+			 if(Math.abs(whoOne.x - whoTwo.x)<=distance){
 					 return(true);
 			 }
 			 else {
@@ -373,9 +420,9 @@ updateTimer: function(){
 //===                                 INTERRACTIONS                                  ===
 //======================================================================================
 	 getJumpHead : function(actif, passif){
-			 if(Game.isOnHead(actif, passif, 3) && Game.toBottom(actif)==false && !actif.body.onFloor() ){
+			 if(Game.isOnHead(actif, passif, -1) && Game.toBottom(actif)==false){
 					 // QUI - Vitesse X - Vitesse Y - Cooldown - isMovable
-					 Game.setHit(actif, passif, null, 300, null, true);
+					 Game.setHit(actif, passif, null, 100, null, true);
 					 Game.getHit(actif, passif, null, -300, null, true);
 					 actif.jumpCount=1;
 			 }
@@ -386,6 +433,7 @@ interact : function(actorOne, actorTwo){
 			Game.getJumpHead(actorOne, actorTwo);
  }
 },
+
 //===============================================================================
 //===                                 ATTACKS                                 ===
 //===============================================================================
@@ -404,13 +452,12 @@ interact : function(actorOne, actorTwo){
 			 actif.hit="punch";
 			 actif.graphicCooldown=60;
 			 passif.hit="getpunch";
-			 if(Game.nexToHor(actif, passif, 50) && Game.nexToVer(actif, passif, 10)){
+			 if(Game.nexToHor(actif, passif, 30) && Game.nexToVer(actif, passif, 14)){
 				 var x = Math.abs(actif.x - passif.x);
 				 var speedX = (1/(0.006*(x-10)))+180 ;
-				 console.log(speedX);
 				 // Attaquant - Attaqué - Vitesse X - Vitesse Y - Cooldown - isMovable - facing
-				 Game.setHit(actif,passif, speedX, -150, 100, true, true);
-				 Game.getHit(actif, passif, speedX, 60, 60, true, false);
+				 Game.setHit(actif,passif, speedX, -150, 72, false, true);
+				 Game.getHit(actif, passif, null, 60, 100, false, false);
 			 }
 		 }
 	 },
@@ -431,12 +478,11 @@ interact : function(actorOne, actorTwo){
 			 }
 	 },
 
-	 setHit : function(mover, moved,hitSpeedX, hitSpeedY, cooldown, isMovable, face){//PASSIF
-		 console.log("sethit :"+hitSpeedX);
+	 setHit : function(mover, moved,hitSpeedX, hitSpeedY, setCooldown, isMovable, face){//PASSIF
 			 if(face==true){
 					 if(Game.facing(mover, moved)==true){
 							 var hitSpeedX = Game.orientHit(mover, moved, hitSpeedX);
-							 Game.appplyHit(moved, hitSpeedX, hitSpeedY, this.cooldown, isMovable);
+							 Game.appplyHit(moved, hitSpeedX, hitSpeedY, setCooldown, isMovable);
 					 }
 			 }
 			 else{
@@ -445,13 +491,11 @@ interact : function(actorOne, actorTwo){
 			 }
 	 },
 	 getHit : function(mover,moved, hitSpeedX, hitSpeedY, getcooldown, isMovable){//ACTIF
-		 	 console.log("gethit :"+hitSpeedX);
 			 var hitSpeedX = Game.orientHit(mover, moved, hitSpeedX);
 			 Game.appplyHit(mover, hitSpeedX, hitSpeedY, getcooldown, isMovable);
 	 },
 	 //==================
 	 appplyHit : function(who , hitSpeedX, hitSpeedY, appCooldown, isMovable){
-		 		 console.log("applyhit :"+hitSpeedX);
 			 who.hitCooldown = appCooldown;
 			 who.isMovable=isMovable;
 			 if(hitSpeedY!=null){
@@ -506,7 +550,7 @@ hit : function(hitter, hitted){
 					if(who.body.onFloor() && Game.toBottom(who) ){
 						who.play('isShifting');
 					}
-					if(who.body.onFloor() && who.did=="stop"){
+					if(who.body.onFloor() && who.did=="stop" &&	who.graphicCooldown==0){
 						who.play('isStoping');
 					}
 				}
@@ -543,7 +587,9 @@ hit : function(hitter, hitted){
 		        Game.scoring(playerOne);
 						Game.scoring(playerTwo);
 		        //LOGS
-
+						//console.log(Math.abs(playerOne.y - playerTwo.y));
+						//console.log( Game.isOnHead(playerOne,playerTwo));
+						//console.log( Game.isOnHead(playerTwo,playerOne));
 	},
 
 	render : function() {
