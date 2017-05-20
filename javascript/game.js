@@ -10,6 +10,7 @@ var Game = {
 		game.load.tilemap('map', 'asset/map/collision_test.json', null, Phaser.Tilemap.TILED_JSON);
 	 	game.load.image('ground_1x1', 'asset/map/ground_1x1.png');
 		game.load.image('tiles2', 'asset/map/tiles2.png');
+		game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
 	},
 
 //==============================================================================
@@ -17,6 +18,7 @@ var Game = {
 //==============================================================================
 
 	create : function(){
+		var win = null;
 		//IMPORT
 		game.physics.startSystem(Phaser.Physics.ARCADE);
 		Game.game.load.bitmapFont('myfont','assets/font/uprt8-fagwg.png', 'assets/font/uprt8-fagwg.fnt');
@@ -47,6 +49,7 @@ var Game = {
 			players[n].animations.add('isStoping',[0,1,2,3],5,true);
 			players[n].animations.add('isShifting',[72],1,false);
 			players[n].animations.add('punch',[145,146,147,148,149,150,151,152,153],16,false);
+			players[n].animations.add('animEnd',[64,65,66,67,68,69,70],16,false);
 			//Physics
 			game.physics.enable(players[n],Phaser.Physics.ARCADE);
 			players[n].hitBoxX=14;
@@ -103,10 +106,10 @@ var Game = {
 
 		//Timer
 		Game.startTime=new Date();
-		Game.totalTime=180;
+		Game.totalTime=15;
 		Game.timeElapsed=0;
 
-		Game.timeLabel = Game.game.add.text(Game.game.world.centerX, 32,  "00:00", {fontSize: "25px",font:"Press Start 2P", fill: "#fff" });
+		Game.timeLabel = Game.game.add.text(Game.game.world.centerX, 25,  "00:00", {fontSize: "35px",font: "Faster One", fill: "#fff" });
 		Game.timeLabel.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
     Game.timeLabel.anchor.setTo(0.5, 0);
     Game.timeLabel.align = 'center';
@@ -116,9 +119,9 @@ var Game = {
 			Game.updateTimer();
 		})
 		//Graphics
-		scoreTextOne = game.add.text(35, 20, 'player 1: '+playerOne.score+'%', { fontSize: '20px',font: 'Press Start 2P', fill: 'rgb(255, 255, 255)' });
+		scoreTextOne = game.add.text(35, 20, 'player 1: '+playerOne.score+'%', { fontSize: '30px',font: "Faster One", fill: 'rgb(255, 255, 255)' });
 		scoreTextOne.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
-		scoreTextTwo = game.add.text(650, 20, 'player 2: '+playerTwo.score+'%', { fontSize: '20px',font: "Press Start 2P", fill: 'rgb(255, 255, 255)' });
+		scoreTextTwo = game.add.text(675, 20, 'player 2: '+playerTwo.score+'%', { fontSize: '30px',font: "Faster One", fill: 'rgb(255, 255, 255)' });
 		scoreTextTwo.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
 	},
 
@@ -134,7 +137,18 @@ updateTimer: function(){
     result += (seconds < 10) ? ":0" + seconds : ":" + seconds;
     Game.timeLabel.text = result;
 		if(Game.timeElapsed >= Game.totalTime){
-    game.state.start('Menu');
+                if(playerOne.win=!false && playerTwo.win!=false){
+                        if(playerOne.score < playerTwo.score){
+                                playerOne.win=false;
+                                playerTwo.win=true;
+                                playerOne.play("animEnd");
+                            }
+                            else{
+                                playerTwo.win=false;
+                                playerOne.win=true;
+                                playerTwo.play("animEnd");
+            }
+}
 }
 },
 
@@ -340,16 +354,18 @@ updateTimer: function(){
 //=====================================
 
 	 move : function(player){
-			 if(player.body.onFloor()){
-					 player.jumpCount= 0;
-			 }
-			 Game.toStop(player);
-			 if(player.isMovable){
-					 Game.toRight(player);
-					 Game.toBottom(player);
-					 Game.toLeft(player);
-					 Game.toTop(player)
-					 Game.animMove(player);
+				if(player.win != false){
+					if(player.body.onFloor()){
+							player.jumpCount= 0;
+					}
+					Game.toStop(player);
+					if(player.isMovable){
+							Game.toRight(player);
+							Game.toBottom(player);
+							Game.toLeft(player);
+							Game.toTop(player)
+							Game.animMove(player);
+				}
 			 }
 	 },
 
@@ -365,11 +381,11 @@ updateTimer: function(){
 			 }
 	 },
 //=====================================
-	 interact : function(actorOne, actorTwo){
-			 if(actorOne.isMovable==true){
-					 Game.getJumpHead(actorOne, actorTwo);
-			 }
-	 },
+interact : function(actorOne, actorTwo){
+ if(actorOne.win!=false && actorTwo.win!=false){
+			Game.getJumpHead(actorOne, actorTwo);
+ }
+},
 //===============================================================================
 //===                                 ATTACKS                                 ===
 //===============================================================================
@@ -448,20 +464,22 @@ updateTimer: function(){
 	 },
 
 //=====================================
-	 hit : function(hitter, hitted){
-			 for(n=0;n<players.length;n++){
-					 if(players[n].hitCooldown>0){
-							 players[n].hitCooldown--;
-					 }
-					 if(players[n].hitCooldown==0){
-							  players[n].hit="";
-							 players[n].isMovable=true;
-					 }
-			 }
-			 Game.downKick(hitter, hitted);
-			 Game.punch(hitter, hitted);
-			 Game.animAtack(hitter, hitted);
-	 },
+hit : function(hitter, hitted){
+					if(hitter.win!=false && hitted.win!=false){
+						 for(n=0;n<players.length;n++){
+								 if(players[n].hitCooldown>0){
+										 players[n].hitCooldown--;
+								 }
+								 if(players[n].hitCooldown==0){
+										 players[n].hit="";
+										 players[n].isMovable=true;
+								 }
+						 }
+						 Game.downKick(hitter, hitted);
+						 Game.punch(hitter, hitted);
+						 Game.animAtack(hitter, hitted);
+				 }
+	},
 //==================================================================================
 //===                                 ANIMATIONS                                 ===
 //==================================================================================
