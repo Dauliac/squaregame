@@ -109,7 +109,7 @@ var Game = {
 
 		//Timer
 		Game.startTime=new Date();
-		Game.totalTime=15;
+		Game.totalTime=5;
 		Game.timeElapsed=0;
 
 		Game.timeLabel = Game.game.add.text(Game.game.world.centerX, 25,  "00:00", {fontSize: "35px",font: "Faster One", fill: "#fff" });
@@ -154,8 +154,8 @@ winOrLoose : function(){
 					playerOne.body.velocity.x=0;
 					playerTwo.body.velocity.x=0;
 					Game.timeLabel.destroy();
-					Game.add.button(Game.game.world.centerX, 20, 'restart', Game.restartGame, Game);
-
+					Game.add.button(320, 10, 'restart', Game.restartGame, Game);
+					music.destroy();
 					if(playerOne.score < playerTwo.score){
 								playerTwo.win=true;
 								playerOne.win=false;
@@ -171,8 +171,6 @@ winOrLoose : function(){
 						if(playerOne.score == playerTwo.score){
 								playerOne.win=false;
 								playerTwo.win=false;
-								Game.timeLabel.destroy();
-								Game.add.button(Game.game.world.centerX, 20, 'restart', Game.startGame, Game);
 								console.log("pas pute");
 										}
 						}
