@@ -121,7 +121,7 @@ var Game = {
 
 		//Timer
 		Game.startTime=new Date();
-		Game.totalTime=5;
+		Game.totalTime=180;
 		Game.timeElapsed=0;
 		Game.timeLabel = Game.game.add.text(Game.game.world.centerX, 25,  "00:00", {fontSize: "35px",font: "Press Start 2P", fill: "#fff" });
 		Game.timeLabel.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
@@ -135,11 +135,11 @@ var Game = {
 		//Graphics
 		scoreTextOne = game.add.text(35, 20, 'player 1: '+playerOne.score+'%', { fontSize: '21px',font: "Press Start 2P", fill: 'rgb(255, 255, 255)' });
 		scoreTextOne.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
-		scoreTextTwo = game.add.text(640, 20, 'player 2: '+playerTwo.score+'%', { fontSize: '21px',font: "Press Start 2P", fill: 'rgb(255, 255, 255)' });
+		scoreTextTwo = game.add.text(630, 20, 'player 2: '+playerTwo.score+'%', { fontSize: '21px',font: "Press Start 2P", fill: 'rgb(255, 255, 255)' });
 		scoreTextTwo.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
 		//audio
-		music2 = game.add.audio('audioGame');
-    music.play();
+		// music = game.add.audio('audioGame');
+    // music.play();
 	},
 
 	updateTimer: function(){
