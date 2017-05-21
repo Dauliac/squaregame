@@ -11,6 +11,9 @@ var Game = {
 		game.load.tilemap('map', 'asset/map/collision_test.json', null, Phaser.Tilemap.TILED_JSON);
 	 	game.load.image('ground_1x1', 'asset/map/ground_1x1.png');
 		game.load.image('tiles2', 'asset/map/tiles2.png');
+		game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
+		game.load.image('restart', 'asset/restart.png');
+		game.load.audio('audioGame', 'asset/audio/Kubbi-Ember-04Cascade.mp3')
 	},
 
 //==============================================================================
@@ -18,6 +21,7 @@ var Game = {
 //==============================================================================
 
 	create : function(){
+		var win = null;
 		//IMPORT
 		game.physics.startSystem(Phaser.Physics.ARCADE);
 		Game.game.load.bitmapFont('myfont','assets/font/uprt8-fagwg.png', 'assets/font/uprt8-fagwg.fnt');
@@ -49,6 +53,8 @@ var Game = {
 			players[n].animations.add('isStoping',[0,1,2,3],5,true);
 			players[n].animations.add('isShifting',[72],1,false);
 			players[n].animations.add('punch',[145,146,147,148,149,150,151,152,153],16,false);
+			players[n].animations.add('animEnd',[64,65,66,67,68,69,70],16,false);
+			players[n].animations.add('winAnim',[128,129,130,131,132,133,134,135,136,137,138,139,140],16,false);
 			//Physics
 			game.physics.enable(players[n],Phaser.Physics.ARCADE);
 			players[n].hitBoxX=14;
@@ -86,6 +92,7 @@ var Game = {
 		square.edgeWidth=0
 		square.edgeHeight=0;
 		square.color = 'rgba(204, 193, 41,0.4)';
+		square.end=false;
 
   	squareTopX=0;
   	squareTopY=62;
@@ -114,26 +121,28 @@ var Game = {
 
 		//Timer
 		Game.startTime=new Date();
-		Game.totalTime=180;
+		Game.totalTime=15;
 		Game.timeElapsed=0;
-
-		Game.timeLabel = Game.game.add.text(Game.game.world.centerX, 40,  "00:00", {fontSize: "25px",font:"Press Start 2P", fill: "#fff" });
-
-    Game.timeLabel.align = 'center';
+		Game.timeLabel = Game.game.add.text(Game.game.world.centerX, 25,  "00:00", {fontSize: "35px",font: "Faster One", fill: "#fff" });
+		Game.timeLabel.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
+    Game.timeLabel.anchor.setTo(0.5, 0);
+    // Game.timeLabel.align = 'center';
 
 
 		Game.gameTimer=game.time.events.loop(100,function(){
 			Game.updateTimer();
 		})
 		//Graphics
-		scoreTextOne = game.add.text(35, 40, 'player 1: '+playerOne.score+'%', { fontSize: '20px',font: 'Press Start 2P', fill: 'rgb(255, 255, 255)' });
+		scoreTextOne = game.add.text(35, 20, 'player 1: '+playerOne.score+'%', { fontSize: '30px',font: "Faster One", fill: 'rgb(255, 255, 255)' });
 		scoreTextOne.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
-		scoreTextTwo = game.add.text(650, 40, 'player 2: '+playerTwo.score+'%', { fontSize: '20px',font: "Press Start 2P", fill: 'rgb(255, 255, 255)' });
+		scoreTextTwo = game.add.text(675, 20, 'player 2: '+playerTwo.score+'%', { fontSize: '30px',font: "Faster One", fill: 'rgb(255, 255, 255)' });
 		scoreTextTwo.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
+		//audio
+		music2 = game.add.audio('audioGame');
+    music.play();
 	},
 
 	updateTimer: function(){
-
     var currentTime = new Date();
     var timeDifference = Game.startTime.getTime() - currentTime.getTime();
     Game.timeElapsed = Math.abs(timeDifference / 1000);
@@ -144,10 +153,45 @@ var Game = {
     result += (seconds < 10) ? ":0" + seconds : ":" + seconds;
     Game.timeLabel.text = result;
 		if(Game.timeElapsed >= Game.totalTime){
-    game.state.start('Menu');
+		Game.winOrLoose();
 		}
 	},
+		//==============================================================================
 
+
+	winOrLoose : function(){
+		if(playerOne.win!=false && playerTwo.win!=false){
+					playerOne.body.velocity.x=0;
+					playerTwo.body.velocity.x=0;
+					Game.timeLabel.destroy();
+					Game.add.button(Game.game.world.centerX, 20, 'restart', Game.restartGame, Game);
+
+					if(playerOne.score < playerTwo.score){
+								playerTwo.win=true;
+								playerOne.win=false;
+								playerOne.play("animEnd");
+								console.log("pute");
+							}
+						if(playerTwo.score < playerOne.score){
+								playerTwo.win=false;
+								playerOne.win=true;
+								playerTwo.play("animEnd");
+								console.log("vraiment pas pute");
+								}
+						if(playerOne.score == playerTwo.score){
+								playerOne.win=false;
+								playerTwo.win=false;
+								Game.timeLabel.destroy();
+								Game.add.button(Game.game.world.centerX, 20, 'restart', Game.startGame, Game);
+								console.log("pas pute");
+										}
+						}
+	},
+
+
+		restartGame : function(){
+  		this.state.start('Menu');
+		},
 		//==============================================================================
     //===                                 SCORE                                  ===
     //==============================================================================
@@ -196,12 +240,9 @@ var Game = {
 			var maxY = game.height-(square.y+square.height)-20;
 			square.newWidth = Math.floor(Math.random() * (maxX - minX +1)) + minX;
 			square.newHeight = Math.floor(Math.random() * (maxY - minY +1)) + minY;
-			console.log("newWidth :"+square.newWidth);
-						console.log("newHeight :"+square.newHeight);
 		},
 
 		randomDown : function(){
-			console.log("il diminue");
 			var minX = 10;
 			var maxX = square.width-150;
 			var minY = 10;
@@ -230,29 +271,40 @@ var Game = {
 		squareChanger : function(){
 			if(square.timer>0){
 				square.timer-=1;
-				if(square.edgeX!=0 || square.edgeY!=0){
 					square.x+=square.edgeX;
 					square.y+=square.edgeY;
-				}
-				if(square.edgeWidth!=0 || square.edgeHeight!=0){
+
 					square.width+=square.edgeWidth;
 					square.height+=square.edgeHeight;
 				}
-			}
+
 		},
 
 		square : function(){
 			Game.squareUpdate();
 			Game.squareChanger();
 
-			if(square.timer==0){
+			if((playerOne.win==false || playerTwo.win==false)&& square.end!=true){
+				console.log(square.timer);
+				square.end=true;
+				square.timer=60*10;
+				square.color = 'rgba(255, 255, 255,0.3)';
+				console.log("square.x"+square.x);
+				square.edgeX=-square.x/square.timer;
+				square.edgeY=-(square.y-64)/square.timer;
+				square.edgeWidth=(game.width-square.width)/square.timer;
+				square.edgeHeight=(game.height-square.height)/square.timer;
+			}
+
+			if(square.timer==0 && square.end!=true){
 				square.edgeX=0;
 				square.edgeY=0;
 				square.edgeWidth=0
 				square.edgeHeight=0;
+				console.log("haahahahahahaha");
 				Game.randomTimer();
-				square.timer=60*5;
 				var token = Math.floor(Math.random()*4);
+
 				if(token==0){
 					square.color = 'rgba(204, 193, 41,0.4)';
 					square.timer+=5*60
@@ -275,23 +327,12 @@ var Game = {
 					square.edgeX=square.newX/square.timer;
 					square.edgeY=square.newY/square.timer;
 				}
-
 			}
-			else{
-				square.timer-=1;
-			}
-
 		},
 
 	//==============================================================================
-	//===                                 GRAPHIC                                ===
-	//==============================================================================
-
-	//=====================================
-
-	//==============================================================================
-	 //===                                 DETECT                                ===
-	 //=============================================================================
+	//===                                 DETECT                                ===
+	//=============================================================================
 
 	 nexTo : function(whoOne,whoTwo, distance ){
 			 if(Math.sqrt(Math.pow(whoOne.x-whoTwo.x,2)+Math.pow(whoOne.y-whoTwo.y,2))< distance ){
@@ -447,7 +488,7 @@ var Game = {
 //=====================================
 
 	 move : function(player){
-		 if(player.win!=false){
+		 if(player.win != false){
 			 if(player.body.onFloor()){
 				 player.jumpCount= 0;
 			 }
@@ -474,9 +515,12 @@ var Game = {
 			 }
 	 },
 //=====================================
-	 interact : function(actorOne, actorTwo){
-		 	Game.getJumpHead(actorOne, actorTwo);
-	 },
+interact : function(actorOne, actorTwo){
+ if(actorOne.win!=false && actorTwo.win!=false){
+			Game.getJumpHead(actorOne, actorTwo);
+ }
+},
+
 //===============================================================================
 //===                                 ATTACKS                                 ===
 //===============================================================================
@@ -551,22 +595,22 @@ var Game = {
 	 },
 
 //=====================================
-	 hit : function(hitter, hitted){
-		 	if(hitter.win!=false && hitted.win!=false){
-				for(n=0;n<players.length;n++){
-					if(players[n].hitCooldown>0){
-						players[n].hitCooldown--;
-					}
-					if(players[n].hitCooldown==0){
-						players[n].hit="";
-						players[n].isMovable=true;
-					}
-				}
-				Game.downKick(hitter, hitted);
-				Game.punch(hitter, hitted);
-				Game.animAtack(hitter, hitted);
-			}
-	 },
+	hit : function(hitter, hitted){
+					if(hitter.win!=false && hitted.win!=false){
+						 for(n=0;n<players.length;n++){
+								 if(players[n].hitCooldown>0){
+										 players[n].hitCooldown--;
+								 }
+								 if(players[n].hitCooldown==0){
+										 players[n].hit="";
+										 players[n].isMovable=true;
+								 }
+						 }
+						 Game.downKick(hitter, hitted);
+						 Game.punch(hitter, hitted);
+						 Game.animAtack(hitter, hitted);
+				 }
+	},
 //==================================================================================
 //===                                 ANIMATIONS                                 ===
 //==================================================================================
@@ -630,18 +674,17 @@ var Game = {
 		        Game.scoring(playerOne);
 						Game.scoring(playerTwo);
 						Game.square();
-		        //LOGS
-						console.log(square.y);
 
+		        //LOGS
 	},
 
 	render : function() {
-	        // game.debug.text('timer: ' + total, 350, 32,{fontSize :'30px'});$
+
 					game.debug.geom(squareTop, square.color);
 					game.debug.geom(squareBottom, square.color);
 					game.debug.geom(squareLeft, square.color);
 					game.debug.geom(squareRight, square.color);
-					// game.debug.geom(square, 'rgba(107, 171, 221, 0.5)')
+
 	    },
 
 }
