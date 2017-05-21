@@ -4,6 +4,7 @@ var Game = {
 //===============================================================================
 
 	preload : function(){
+		game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
 		game.load.spritesheet('spritePlayerOne','asset/playerOne.png',64,60.05);
 		game.load.spritesheet('spritePlayerTwo','asset/playerTwo.png',64,60.05);
 		game.load.image('jeu', 'asset/map/jeu.jpg');
@@ -33,8 +34,9 @@ var Game = {
 	    layer.debug = false;
 		//PROPERTY
 		game.physics.startSystem(Phaser.Physics.ARCADE);
-		playerOne=game.add.sprite(400,300,'spritePlayerOne');
-		playerTwo=game.add.sprite(400,300,'spritePlayerTwo');
+		playerOne=game.add.sprite(460,250,'spritePlayerOne');
+		playerTwo=game.add.sprite(550,250,'spritePlayerTwo');
+		playerTwo.scale.x=-1;
 		players=[playerOne, playerTwo];
 		for(n=0;n<players.length;n++){
 			players[n].anchor.setTo (0.5,0.6);
@@ -66,20 +68,29 @@ var Game = {
 			players[n].isMovable=true;
 			players[n].combo=0;
 			players[n].score=0;
-			players[n].scoreTimer=0;
+			players[n].scoreTimer=60;
 			players[n].body.bounce.y = 0.13;
 			players[n].body.bounce.x = 0.5;
+			players[n].win=null;
 		}
 		playerOne.keybinds=[Phaser.Keyboard.Z, Phaser.Keyboard.Q, Phaser.Keyboard.S, Phaser.Keyboard.D, Phaser.Keyboard.A];
 		playerTwo.keybinds=[Phaser.Keyboard.O, Phaser.Keyboard.K, Phaser.Keyboard.L, Phaser.Keyboard.M, Phaser.Keyboard.I];
 
 		// SQUARE
-  	square = new Phaser.Rectangle(200, 200, 380, 220);
+
+  	square = new Phaser.Rectangle(game.width/2-400/2, 180, 400, 250);
+		square.timer=5*60;
+		square.action="" ;
+		square.edgeX=0;
+		square.edgeY=0;
+		square.edgeWidth=0
+		square.edgeHeight=0;
+		square.color = 'rgba(204, 193, 41,0.4)';
 
   	squareTopX=0;
   	squareTopY=62;
   	squareTopWidth=game.width;
-  	squareTopHeight=square.y-62;
+  	squareTopHeight=square.y;
 
   	squareLeftX=0;
   	squareLeftY=square.y;
@@ -106,9 +117,8 @@ var Game = {
 		Game.totalTime=180;
 		Game.timeElapsed=0;
 
-		Game.timeLabel = Game.game.add.text(Game.game.world.centerX, 32,  "00:00", {fontSize: "25px",font:"Press Start 2P", fill: "#fff" });
-		Game.timeLabel.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
-    Game.timeLabel.anchor.setTo(0.5, 0);
+		Game.timeLabel = Game.game.add.text(Game.game.world.centerX, 40,  "00:00", {fontSize: "25px",font:"Press Start 2P", fill: "#fff" });
+
     Game.timeLabel.align = 'center';
 
 
@@ -116,13 +126,13 @@ var Game = {
 			Game.updateTimer();
 		})
 		//Graphics
-		scoreTextOne = game.add.text(35, 20, 'player 1: '+playerOne.score+'%', { fontSize: '20px',font: 'Press Start 2P', fill: 'rgb(255, 255, 255)' });
+		scoreTextOne = game.add.text(35, 40, 'player 1: '+playerOne.score+'%', { fontSize: '20px',font: 'Press Start 2P', fill: 'rgb(255, 255, 255)' });
 		scoreTextOne.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
-		scoreTextTwo = game.add.text(650, 20, 'player 2: '+playerTwo.score+'%', { fontSize: '20px',font: "Press Start 2P", fill: 'rgb(255, 255, 255)' });
+		scoreTextTwo = game.add.text(650, 40, 'player 2: '+playerTwo.score+'%', { fontSize: '20px',font: "Press Start 2P", fill: 'rgb(255, 255, 255)' });
 		scoreTextTwo.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
 	},
 
-updateTimer: function(){
+	updateTimer: function(){
 
     var currentTime = new Date();
     var timeDifference = Game.startTime.getTime() - currentTime.getTime();
@@ -135,10 +145,10 @@ updateTimer: function(){
     Game.timeLabel.text = result;
 		if(Game.timeElapsed >= Game.totalTime){
     game.state.start('Menu');
-}
-},
+		}
+	},
 
-//==============================================================================
+		//==============================================================================
     //===                                 SCORE                                  ===
     //==============================================================================
     scoring : function(who){
@@ -147,7 +157,7 @@ updateTimer: function(){
 				}
 				if( !(square.x > who.x && who.x > square.x+square.width) && !(square.y < who.y && who.y < square.y+square.height) && who.scoreTimer==0){
 						who.score-=1
-						who.scoreTimer=100;
+						who.scoreTimer=60;
 				}
 				scoreTextOne.setText("player 1: "+playerOne.score+"%");
 				scoreTextTwo.setText("player 2: "+playerTwo.score+"%");
@@ -157,10 +167,10 @@ updateTimer: function(){
     //===                                 SQUARE                                 ===
     //==============================================================================
 
-    updateSquare : function(){
+    squareUpdate : function(){
 
         squareTop.width=game.width;
-        squareTop.height=square.y;
+        squareTop.height=square.y-62;
 
         squareLeft.y=square.y;
         squareLeft.width=square.x;
@@ -177,16 +187,99 @@ updateTimer: function(){
 
     },
 
-		squareMove : function(newX, newY){
-
-		},
-
-		squareRecize : function(){
-
-		},
 	//=====================================
+		randomUp : function(){
+			console.log("il augmente");
+			var minX = 10;
+			var maxX = game.width-(square.x+square.width)-20;
+			var minY = 10;
+			var maxY = game.height-(square.y+square.height)-20;
+			square.newWidth = Math.floor(Math.random() * (maxX - minX +1)) + minX;
+			square.newHeight = Math.floor(Math.random() * (maxY - minY +1)) + minY;
+			console.log("newWidth :"+square.newWidth);
+						console.log("newHeight :"+square.newHeight);
+		},
 
-		squareAction : function(){
+		randomDown : function(){
+			console.log("il diminue");
+			var minX = 10;
+			var maxX = square.width-150;
+			var minY = 10;
+			var maxY = square.height-100;
+			square.newWidth = -Math.floor(Math.random() * (maxX - minX +1)) + minX;
+			square.newHeight = -Math.floor(Math.random() * (maxY - minY +1)) + minY;
+		},
+		randomMove : function(){
+			console.log("il bouge");
+			var minX = -square.x;
+			var maxX = game.width-(square.x+square.width);
+			var minY = -(square.y);
+			var maxY = game.height-62-(square.y+square.width);
+			square.newX = Math.floor(Math.random() * (maxX - minX +1)) + minX;
+			square.newY = Math.floor(Math.random() * (maxY - minY +1)) + minY;
+		},
+
+		randomTimer : function(){
+			var min=1;
+			var max=20;
+			var secs = Math.floor(Math.random() * (max - min +1)) + min;
+			square.timer=60*secs;
+		},
+		//====================================
+
+		squareChanger : function(){
+			if(square.timer>0){
+				square.timer-=1;
+				if(square.edgeX!=0 || square.edgeY!=0){
+					square.x+=square.edgeX;
+					square.y+=square.edgeY;
+				}
+				if(square.edgeWidth!=0 || square.edgeHeight!=0){
+					square.width+=square.edgeWidth;
+					square.height+=square.edgeHeight;
+				}
+			}
+		},
+
+		square : function(){
+			Game.squareUpdate();
+			Game.squareChanger();
+
+			if(square.timer==0){
+				square.edgeX=0;
+				square.edgeY=0;
+				square.edgeWidth=0
+				square.edgeHeight=0;
+				Game.randomTimer();
+				square.timer=60*5;
+				var token = Math.floor(Math.random()*4);
+				if(token==0){
+					square.color = 'rgba(204, 193, 41,0.4)';
+					square.timer+=5*60
+				}
+				if(token==1){//UP
+					Game.randomUp();
+					square.color="rgba(52,255, 58,0.4)";
+					square.edgeWidth=square.newWidth/square.timer;
+					square.edgeHeight=square.newHeight/square.timer;
+				}
+				if(token==2){//DOWN
+					Game.randomDown();
+			 		square.color = 'rgba(255,47, 175,0.4)';
+					square.edgeWidth=square.newWidth/square.timer;
+					square.edgeHeight=square.newHeight/square.timer;
+				}
+				if(token==3){//MOVE
+					Game.randomMove();
+					square.color = 'rgba(22, 108, 200,0.4)';
+					square.edgeX=square.newX/square.timer;
+					square.edgeY=square.newY/square.timer;
+				}
+
+			}
+			else{
+				square.timer-=1;
+			}
 
 		},
 
@@ -197,11 +290,8 @@ updateTimer: function(){
 	//=====================================
 
 	//==============================================================================
-	 //===                                 DETECT                                 ===
-	 //==============================================================================
-	 random : function(min, max){
-		 Math.floor((Math.random() * min) + max);
-	 },
+	 //===                                 DETECT                                ===
+	 //=============================================================================
 
 	 nexTo : function(whoOne,whoTwo, distance ){
 			 if(Math.sqrt(Math.pow(whoOne.x-whoTwo.x,2)+Math.pow(whoOne.y-whoTwo.y,2))< distance ){
@@ -283,26 +373,26 @@ updateTimer: function(){
 					 who.jumpCooldown=0;
 					 who.jumpCount=0;
 			 }
-			 if(who.body.onFloor()){
-					 who.tchFloor=true;
-					 who.jumpCooldown=0;
-					 who.jumpCount=0;
-			 }
-			 if(game.input.keyboard.isDown(who.keybinds[0]) && who.jumpCount==0){
+			 if(!game.input.keyboard.isDown(who.keybinds[2])){
+				 if(game.input.keyboard.isDown(who.keybinds[0]) && who.jumpCount==0){
 					 who.body.velocity.y = -who.speedY;
 					 who.jumpCooldown=30;
 					 who.jumpCount++;
 					 who.tchFloor=false;
 					 who.did="top";
 					 return(true);
-			 }
-			 else if(game.input.keyboard.isDown(who.keybinds[0]) && who.jumpCount==1 && who.jumpCooldown==0){
+				 }
+				 else if(game.input.keyboard.isDown(who.keybinds[0]) && who.jumpCount==1 && who.jumpCooldown==0){
 
 					 who.body.velocity.y = -250;
 					 who.tchFloor=false;
 					 who.jumpCount++;
 					 who.did="topBis";
 					 return(true);
+				 }
+				 else{
+					 return(false);
+				 }
 			 }
 			 else{
 					 return(false);
@@ -322,7 +412,7 @@ updateTimer: function(){
 
 	 toBottom : function(who){
 			 if( game.input.keyboard.isDown(who.keybinds[2])) {
-					 if(who.body.velocity.y<850){
+					 if(who.body.velocity.y<800){
 							 who.did="bottom";
 							 who.body.velocity.y+=30;
 					 }
@@ -357,17 +447,19 @@ updateTimer: function(){
 //=====================================
 
 	 move : function(player){
+		 if(player.win!=false){
 			 if(player.body.onFloor()){
-					 player.jumpCount= 0;
+				 player.jumpCount= 0;
 			 }
 			 Game.toStop(player);
 			 if(player.isMovable){
-					 Game.toRight(player);
-					 Game.toBottom(player);
-					 Game.toLeft(player);
-					 Game.toTop(player)
-					 Game.animMove(player);
+				 Game.toRight(player);
+				 Game.toBottom(player);
+				 Game.toLeft(player);
+				 Game.toTop(player)
+				 Game.animMove(player);
 			 }
+		 }
 	 },
 
 //======================================================================================
@@ -460,18 +552,20 @@ updateTimer: function(){
 
 //=====================================
 	 hit : function(hitter, hitted){
-			 for(n=0;n<players.length;n++){
-					 if(players[n].hitCooldown>0){
-							 players[n].hitCooldown--;
-					 }
-					 if(players[n].hitCooldown==0){
-							  players[n].hit="";
-							 players[n].isMovable=true;
-					 }
-			 }
-			 Game.downKick(hitter, hitted);
-			 Game.punch(hitter, hitted);
-			 Game.animAtack(hitter, hitted);
+		 	if(hitter.win!=false && hitted.win!=false){
+				for(n=0;n<players.length;n++){
+					if(players[n].hitCooldown>0){
+						players[n].hitCooldown--;
+					}
+					if(players[n].hitCooldown==0){
+						players[n].hit="";
+						players[n].isMovable=true;
+					}
+				}
+				Game.downKick(hitter, hitted);
+				Game.punch(hitter, hitted);
+				Game.animAtack(hitter, hitted);
+			}
 	 },
 //==================================================================================
 //===                                 ANIMATIONS                                 ===
@@ -535,19 +629,19 @@ updateTimer: function(){
 		        Game.interact(playerTwo, playerOne);
 		        Game.scoring(playerOne);
 						Game.scoring(playerTwo);
+						Game.square();
 		        //LOGS
-						console.log(Math.abs(playerOne.y - playerTwo.y));
-						console.log( Game.isOnHead(playerOne,playerTwo));
-						console.log( Game.isOnHead(playerTwo,playerOne));
+						console.log(square.y);
+
 	},
 
 	render : function() {
-	        //game.debug.text('timer: ' + total, 350, 32,{fontSize :'30px'});$
-	        var color = 'rgba(255,47, 175,0.4)';
-					game.debug.geom(squareTop, color);
-					game.debug.geom(squareBottom, color);
-					game.debug.geom(squareLeft, color);
-					game.debug.geom(squareRight, color);
+	        // game.debug.text('timer: ' + total, 350, 32,{fontSize :'30px'});$
+					game.debug.geom(squareTop, square.color);
+					game.debug.geom(squareBottom, square.color);
+					game.debug.geom(squareLeft, square.color);
+					game.debug.geom(squareRight, square.color);
+					// game.debug.geom(square, 'rgba(107, 171, 221, 0.5)')
 	    },
 
 }
