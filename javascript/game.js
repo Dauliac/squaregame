@@ -123,7 +123,7 @@ var Game = {
 		Game.startTime=new Date();
 		Game.totalTime=5;
 		Game.timeElapsed=0;
-		Game.timeLabel = Game.game.add.text(Game.game.world.centerX, 25,  "00:00", {fontSize: "35px",font: "Faster One", fill: "#fff" });
+		Game.timeLabel = Game.game.add.text(Game.game.world.centerX, 25,  "00:00", {fontSize: "35px",font: "Press Start 2P", fill: "#fff" });
 		Game.timeLabel.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
     Game.timeLabel.anchor.setTo(0.5, 0);
     // Game.timeLabel.align = 'center';
@@ -133,9 +133,9 @@ var Game = {
 			Game.updateTimer();
 		})
 		//Graphics
-		scoreTextOne = game.add.text(35, 20, 'player 1: '+playerOne.score+'%', { fontSize: '30px',font: "Faster One", fill: 'rgb(255, 255, 255)' });
+		scoreTextOne = game.add.text(35, 20, 'player 1: '+playerOne.score+'%', { fontSize: '21px',font: "Press Start 2P", fill: 'rgb(255, 255, 255)' });
 		scoreTextOne.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
-		scoreTextTwo = game.add.text(675, 20, 'player 2: '+playerTwo.score+'%', { fontSize: '30px',font: "Faster One", fill: 'rgb(255, 255, 255)' });
+		scoreTextTwo = game.add.text(640, 20, 'player 2: '+playerTwo.score+'%', { fontSize: '21px',font: "Press Start 2P", fill: 'rgb(255, 255, 255)' });
 		scoreTextTwo.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
 		//audio
 		music2 = game.add.audio('audioGame');
@@ -176,7 +176,6 @@ var Game = {
 								playerTwo.win=false;
 								playerOne.win=true;
 								playerTwo.play("animEnd");
-								console.log("vraiment pas pute");
 								}
 						if(playerOne.score == playerTwo.score){
 								playerOne.win=false;
@@ -278,14 +277,11 @@ var Game = {
 
 		},
 
-		square : function(){
-			Game.squareUpdate();
-			Game.squareChanger();
-
+		squareWin : function(){
 			if((playerOne.win==false || playerTwo.win==false)&& square.end!=true){
 				console.log(square.timer);
 				square.end=true;
-				square.timer=60*10;
+				square.timer=60*2;
 				square.color = 'rgba(255, 255, 255,0.3)';
 				console.log("square.x"+square.x);
 				square.edgeX=-square.x/square.timer;
@@ -293,6 +289,12 @@ var Game = {
 				square.edgeWidth=(game.width-square.width)/square.timer;
 				square.edgeHeight=(game.height-square.height)/square.timer;
 			}
+		},
+
+		square : function(){
+			Game.squareUpdate();
+			Game.squareChanger();
+			Game.squareWin();
 
 			if(square.timer==0 && square.end!=true){
 				square.edgeX=0;
@@ -486,9 +488,12 @@ var Game = {
 //=====================================
 
 	 move : function(player){
-		 if(player.win != false){
+		 if(player.body.y<65 && player.body.velocity.y<0){
+			 player.body.velocity.y=0;
+		 }
+		 if(player.win!=false){
 			 if(player.body.onFloor()){
-				 player.jumpCount= 0;
+				 player.jumpCount=0;
 			 }
 			 Game.toStop(player);
 			 if(player.isMovable){
@@ -513,11 +518,12 @@ var Game = {
 			 }
 	 },
 //=====================================
-interact : function(actorOne, actorTwo){
- if(actorOne.win!=false && actorTwo.win!=false){
+	interact : function(actorOne, actorTwo){
+ 		if(square.end!=true){
+			game.physics.arcade.collide(playerOne, playerTwo);
 			Game.getJumpHead(actorOne, actorTwo);
- }
-},
+ 		}
+	},
 
 //===============================================================================
 //===                                 ATTACKS                                 ===
@@ -660,7 +666,6 @@ interact : function(actorOne, actorTwo){
 	//===                                 UPDATE                                  ==
 	//==============================================================================
 		update : function(){
-			game.physics.arcade.collide(playerOne, playerTwo);
 		        game.physics.arcade.collide(playerOne, layer);
 		        game.physics.arcade.collide(playerTwo, layer);
 		        Game.hit(playerOne, playerTwo);
