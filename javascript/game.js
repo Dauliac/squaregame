@@ -133,9 +133,9 @@ var Game = {
 			Game.updateTimer();
 		})
 		//Graphics
-		scoreTextOne = game.add.text(35, 20, 'player 1: '+playerOne.score+'%', { fontSize: '21px',font: "Press Start 2P", fill: 'rgb(255, 255, 255)' });
+		scoreTextOne = game.add.text(10, 20, 'player 1: '+playerOne.score+'%', { fontSize: '21px',font: "Press Start 2P", fill: 'rgb(255, 255, 255)' });
 		scoreTextOne.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
-		scoreTextTwo = game.add.text(630, 20, 'player 2: '+playerTwo.score+'%', { fontSize: '21px',font: "Press Start 2P", fill: 'rgb(255, 255, 255)' });
+		scoreTextTwo = game.add.text(610, 20, 'player 2: '+playerTwo.score+'%', { fontSize: '21px',font: "Press Start 2P", fill: 'rgb(255, 255, 255)' });
 		scoreTextTwo.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
 		//audio
 		// music = game.add.audio('audioGame');
@@ -251,8 +251,8 @@ var Game = {
 			console.log("il bouge");
 			var minX = -square.x;
 			var maxX = game.width-(square.x+square.width);
-			var minY = -(square.y);
-			var maxY = game.height-62-(square.y+square.width);
+			var minY = -square.y+65;
+			var maxY = game.height-(square.y+square.width);
 			square.newX = Math.floor(Math.random() * (maxX - minX +1)) + minX;
 			square.newY = Math.floor(Math.random() * (maxY - minY +1)) + minY;
 		},
