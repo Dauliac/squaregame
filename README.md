@@ -16,7 +16,7 @@
 #[Jeux de combat d'acrade | link : dauliac.github.io/squaregame | 2 players       ]
 #[================================================================================]
 
-#Collaborateurs :Julien | Thomas | Paul-Michel | Rraph
+#Collaborateurs : dauliac | TomD33 | Paul-Michel | Rraph
 
 # LANGUAGE / FRAMEWORK :
 #  Html | CSS | JavaScript | Phaser
