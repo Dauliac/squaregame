@@ -161,10 +161,12 @@ var Game = {
 
 	winOrLoose : function(){
 		if(playerOne.win!=false && playerTwo.win!=false){
+				timeOutText = game.add.text(250, 400, 'TIME OUT', { fontSize: '60px',font: "Press Start 2P", fill: '#bd2b2b' });
+				timeOutText.setShadow(3, 3, 'rgba(0,0,0,0.6)', 0);
 					playerOne.body.velocity.x=0;
 					playerTwo.body.velocity.x=0;
 					Game.timeLabel.destroy();
-					Game.add.button(320, 10, 'restart', Game.restartGame, Game);
+					Game.add.button(305, 10, 'restart', Game.restartGame, Game);
 					music.destroy();
 					if(playerOne.score < playerTwo.score){
 								playerTwo.win=true;
